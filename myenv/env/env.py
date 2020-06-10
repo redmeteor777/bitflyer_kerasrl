@@ -30,6 +30,7 @@ class MyEnv(gym.Env):
             dtype=float,
             )
         self.episode_count = 0
+        # step数の導出に用いるためcsvファイルの長さを取得
         self.episode_length = len(self.env_data) - 1
         self._reset()
     
