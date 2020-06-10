@@ -45,6 +45,7 @@ class MyEnv(gym.Env):
         return self._observe()
 
     def flag_initializer(self):
+        # ループ開始時のフラグ初期化
         self.log = []
         self.entry_signal = None
         self.mode = None
@@ -70,6 +71,7 @@ class MyEnv(gym.Env):
         self.done = False
 
     def flag_cleaner(self):
+        # 取引決済後のフラグ初期化
         self.flag_["side"] = None
         self.flag_["pos_price"] = None
         self.flag_["stop"] = None
@@ -165,12 +167,14 @@ class MyEnv(gym.Env):
                     self.counter["win_sell"] += 1
 
     def judge_entry(self, action):
+        # エントリー可否を判断
         if action == 0:
             self.entry_signal = "BUY"
         elif action == 1:
             self.entry_signal = "SELL"
 
     def position_closer(self):
+        # ポジションを決済する
         if self.flag_["side"] == "BUY":
             # ロング時の決済注文
             self.flag_["collateral"] += \
@@ -193,21 +197,22 @@ class MyEnv(gym.Env):
             self.flag_cleaner()
 
     def calc_stop_range(self):
+        # ストップ幅の計算
         limit_range = self.tmp_price["min_atr_30"]
         if self.entry_signal == "BUY":        
             self.flag_["stop"] = self.tmp_price["close_price"] - limit_range * 2.5
-            # self.flag_["limit"] = self.tmp_price["close_price"] + limit_range
         elif self.entry_signal == "SELL":
             self.flag_["stop"] = self.tmp_price["close_price"] + limit_range * 2.5
-            # self.flag_["limit"] = self.tmp_price["close_price"] - limit_range
 
     def calc_size(self):
-            if self.settings_["size"] == "fix":
-                self.flag_["size"] = 1
-            else:
-                self.flag_["size"] = round(self.flag_["collateral"] // 10000 * 0.01, 2)
+        # ポジションサイズの計算
+        if self.settings_["size"] == "fix":
+            self.flag_["size"] = 1
+        else:
+            self.flag_["size"] = round(self.flag_["collateral"] // 10000 * 0.01, 2)
 
     def create_entry(self):
+        # 注文フラッグを作成
         if self.entry_signal == "BUY":
             self.counter["entry_buy"] += 1
             self.flag_["side"] = "BUY"
@@ -236,9 +241,6 @@ class MyEnv(gym.Env):
         return result
 
     def logger_settings(self):
-        """Log on/off"""
-        # log_file_path = "./" + datetime.now().strftime("%Y-%m-%d-%H-%M") + "log.txt"
-        # debug_log_file_path = "./" + datetime.now().strftime("%Y-%m-%d-%H-%M") + "debug_log.txt"
 
         """Logger Settings"""
         self.logger = getLogger(__name__)
@@ -246,11 +248,3 @@ class MyEnv(gym.Env):
         self.handlerSh = StreamHandler()
         self.handlerSh.setLevel(INFO)
         self.logger.addHandler(self.handlerSh)
-
-        # self.handlerFile = FileHandler(log_file_path)
-        # self.handlerFile.setLevel(INFO)
-        # self.logger.addHandler(self.handlerFile)
-
-        # self.debughandlerFile = FileHandler(debug_log_file_path)
-        # self.debughandlerFile.setLevel(INFO)
-        # self.logger.addHandler(self.debughandlerFile)
